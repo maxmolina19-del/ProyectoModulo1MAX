@@ -52,7 +52,6 @@ if modulo == "Home":
 #=======================================================
 # REGISTRO
 #=======================================================
-
 elif modulo == "Registro":
 
     st.header("Registro de Gestión")
@@ -63,28 +62,80 @@ elif modulo == "Registro":
 
     analisis = st.text_area("ANALISIS DE CASO")
 
-    contacto = st.selectbox(
-        "TIPO DE CONTACTO",
+    #------------------------------
+    # RESULTADO
+    #------------------------------
+
+    resultado = st.selectbox(
+        "RESULTADO",
         [
-            "CONTACTO EFECTIVO",
-            "CONTACTO NO EFECTIVO"
+            "DESCARTE",
+            "BUENA",
+            "FRAUDE",
+            "PENDIENTE"
         ]
     )
 
-    if contacto == "CONTACTO EFECTIVO":
+    #====================================================
+    # LÓGICA DEPENDIENTE DEL RESULTADO
+    #====================================================
 
-        resultado = st.selectbox(
-            "RESULTADO",
-            [
-                "BUENA",
-                "FRAUDE"
-            ]
+    if resultado == "DESCARTE":
+
+        gestion = st.selectbox(
+            "GESTIÓN",
+            ["ANALISIS"],
+            disabled=True
         )
 
-    else:
+        categoria = st.selectbox(
+            "CATEGORÍA",
+            ["NO APLICA"],
+            disabled=True
+        )
 
-        resultado = st.selectbox(
-            "MOTIVO",
+        subcategoria = st.selectbox(
+            "SUB_CATEGORIA",
+            ["NO APLICA"],
+            disabled=True
+        )
+
+    elif resultado in ["BUENA", "FRAUDE"]:
+
+        gestion = st.selectbox(
+            "GESTIÓN",
+            ["LLAMADA"],
+            disabled=True
+        )
+
+        categoria = st.selectbox(
+            "CATEGORÍA",
+            ["CONTACTO EFECTIVO"],
+            disabled=True
+        )
+
+        subcategoria = st.selectbox(
+            "SUB_CATEGORIA",
+            ["CONTACTO EFECTIVO"],
+            disabled=True
+        )
+
+    elif resultado == "PENDIENTE":
+
+        gestion = st.selectbox(
+            "GESTIÓN",
+            ["LLAMADA"],
+            disabled=True
+        )
+
+        categoria = st.selectbox(
+            "CATEGORÍA",
+            ["CONTACTO NO EFECTIVO"],
+            disabled=True
+        )
+
+        subcategoria = st.selectbox(
+            "SUB_CATEGORIA",
             [
                 "NO CONTESTA",
                 "TELÉFONO APAGADO",
@@ -96,29 +147,29 @@ elif modulo == "Registro":
             ]
         )
 
+    #====================================================
+    # BOTÓN REGISTRAR
+    #====================================================
+
     if st.button("REGISTRAR", use_container_width=True):
 
         fecha = datetime.now().strftime("%d/%m/%Y")
-
         hora = datetime.now().strftime("%H:%M:%S")
-
         usuario = getpass.getuser()
 
         nuevo = pd.DataFrame([{
 
             "FECHA": fecha,
-
             "HORA": hora,
-
             "USUARIO": usuario,
 
             "DNI_CLIENTE": dni,
-
             "CELULAR": celular,
 
-            "TIPO_CONTACTO": contacto,
-
             "RESULTADO": resultado,
+            "GESTIÓN": gestion,
+            "CATEGORÍA": categoria,
+            "SUB_CATEGORIA": subcategoria,
 
             "ANALISIS_CASO": analisis
 
@@ -126,17 +177,18 @@ elif modulo == "Registro":
 
         if os.path.exists(ARCHIVO):
 
-            existente = pd.read_csv(ARCHIVO)
+            datos = pd.read_csv(ARCHIVO)
 
-            existente = pd.concat([existente, nuevo], ignore_index=True)
+            datos = pd.concat([datos, nuevo], ignore_index=True)
 
-            existente.to_csv(ARCHIVO, index=False)
+            datos.to_csv(ARCHIVO, index=False)
 
         else:
 
             nuevo.to_csv(ARCHIVO, index=False)
 
         st.success("Registro almacenado correctamente.")
+
 
 #=======================================================
 # DETALLE
